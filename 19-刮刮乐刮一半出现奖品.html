@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<canvas id="canvas" width="384" height="240" style="border:1px solid red;background-image:url(图片/beauty/ChMkJ1efNQWId32pAARxsDJ-nEEAAUD1wBkQ3MABHHI034.jpg);"></canvas>
+</body>
+<script src="jquery-2.1.4.js"></script>
+<script>
+    var canvas = $("canvas").get(0);
+    var ctx = canvas.getContext("2d");
+
+    ctx.fillStyle="rgb(211,211,211)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.globalCompositeOperation="destination-out";//如果前后有2个图形重叠，那么将只会出现旧图，并且只会出现旧图与新图不重叠的部分
+    
+
+    //实现点击并拖动的事件效果
+    $(canvas).on("mousedown",function(){
+        $(this).on("mousemove",function(e){
+
+
+
+            //e.pageX,e.pageY是表示鼠标位于网页中的坐标
+
+            //获取鼠标位于canvas中的坐标
+            var x=e.pageX-canvas.offsetLeft;
+            var y=e.pageY-canvas.offsetTop;
+
+
+            //在该位置，以鼠标为圆心，绘制一个小圆
+            ctx.beginPath();
+
+            ctx.arc(x,y,20,0,2*Math.PI);
+            ctx.fill();
+
+
+            //每一次刮完之后，判断刮出了多少区域
+            var imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+            var data=imgData.data;//数组=canvas.width*canvas.height*4
+
+            //要根据数组中元素的组成规律，判断出被刮出的部分的像素点的个数
+            //      -->被刮出(0,0,0,0)     -->没有被刮出的(211,211,211,255)
+
+            var count=0;//记录被刮出的像素点的个数
+            for (var i = 0; i < data.length; i+=4) {
+                //遍历的过程：i=0  i=4  i=8 ...
+
+                //像素点的r:data[i]         ==0
+                //像素点的g:data[i+1]       ==0
+                //像素点的b:data[i+2]       ==0
+                //像素点的a:data[i+3]       ==0
+
+                if(data[i]==0 && data[i+1]==0 && data[i+2]==0 && data[i+3]==0){
+                    count++;
+                }
+
+            }
+//            console.log(count);
+
+            //判断是否被刮出一半：
+            if(count>=(canvas.width*canvas.height/2)){
+                //a、出现奖品
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                //b、把一系列的事件都解除
+                $(canvas).off("mousedown mouseup mousemove");
+            }
+
+        })
+
+    }).on("mouseup",function(){
+        //清除mousemove事件     -->不要清除mousedown事件，一旦清除后面的功能就废了
+        $(this).off("mousemove");
+    })
+
+</script>
+</html>

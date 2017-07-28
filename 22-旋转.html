@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<canvas id="canvas" width="800" height="600" style="border:1px solid red;"></canvas>
+</body>
+<script>
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    function Chain(opt){
+
+        for (var key in opt) {
+            this[key]=opt[key];
+        }
+
+        //给定一个起点(第一个小圆的圆心位于大圆上的弧度值)
+        this.beginRadian=-Math.PI/2;
+
+        this.init();
+    }
+    Chain.prototype={
+        constructor:Chain,
+        init:function(){
+            var self=this;
+
+            var timer=setInterval(function(){
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+
+                //1、绘制大圆
+                self.drawBigCircle();
+
+                //2、绘制小圆
+                self.drawSmallCircles();
+
+                self.beginRadian+=0.003*Math.PI;
+
+            },10);
+
+
+        },
+
+        //绘制大圆
+        drawBigCircle:function(){
+            ctx.beginPath();
+            ctx.arc(this.bigX,this.bigY,this.bigRadius,0,2*Math.PI);
+            ctx.stroke();
+        },
+
+        /**
+         * 绘制若干个小圆
+         */
+        drawSmallCircles:function(){
+            //获取小圆的个数
+            var count=this.data.length;
+            //-->相邻小圆之间的弧度差
+            var singleRadian=2*Math.PI/count;
+
+
+
+            for (var i = 0; i < count; i++) {
+                //绘制单个小圆
+                var radian=this.beginRadian+singleRadian*i;//每一个小圆的圆心的弧度值
+
+                this.drawSingleSmallCircle(radian);
+
+            }
+
+        },
+
+        //radian：表示小圆位于大圆上的弧度值
+        //bigX,bigY：大圆的圆心,bigRadius：大圆的半径
+        //smallRadius：小圆的半径
+
+        /**
+         * 绘制单个小圆
+         * @param radian
+         */
+        drawSingleSmallCircle:function(radian){
+            var h=this.bigRadius*Math.sin(radian);
+            var b=this.bigRadius*Math.cos(radian);
+
+            //计算小圆的圆心
+            var smallX=this.bigX+b;
+            var smallY=this.bigY+h;
+
+            ctx.beginPath();
+            ctx.arc(smallX,smallY,this.smallRadius,0,2*Math.PI);
+            ctx.fill();
+        }
+
+    }
+
+    var chain=new Chain({
+        data:["大前端","PHP","Java","Python","C++","UI视觉设计","全栈","电子商务"],
+        bigX:300,
+        bigY:300,
+        bigRadius:150,
+        smallRadius:20
+
+    });
+</script>
+</html>
